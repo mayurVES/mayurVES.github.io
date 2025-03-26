@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Special Person!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600;700;900&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            background-color: #fdf2f8;
+        }
+
+        .fancy-text {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .page {
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .page-1 {
+            z-index: 3;
+            background: linear-gradient(135deg, #f9a8d4, #f472b6);
+        }
+
+        .page-2 {
+            z-index: 2;
+            transform: translateX(100%);
+            background: linear-gradient(135deg, #c4b5fd, #818cf8);
+        }
+
+        .page-3 {
+            z-index: 1;
+            transform: translateX(100%);
+            background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .page-3 {
+                padding: 20px 0;
+            }
+            
+            .page-3 .max-w-2xl {
+                margin: 0 15px;
+            }
+        }
+
+        .big-date {
+            font-size: 5rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 640px) {
+            .big-date {
+                font-size: 3rem;
+            }
+        }
+
+        .memory-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .memory-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fullscreen-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .option-btn {
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            bottom: -50px;
+            animation: float 15s infinite linear;
+        }
+
+        .balloon::before {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 50px;
+            background-color: rgba(0,0,0,0.2);
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+        }
+
+        /* New decorative elements styles */
+        .party-element {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            will-change: transform, opacity;
+            animation: floatElement 12s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(100vh) rotate(0deg) scale(1);
+        }
+
+        .cake-icon {
+            width: 40px;
+            height: 40px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff69b4"><path d="M12 6a2 2 0 0 0 2-2c0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm6 3h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v9c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-9c0-1.66-1.34-3-3-3z"/></svg>') no-repeat center center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .gift-icon {
+            width: 35px;
+            height: 35px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a855f7"><path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5-2.22A2.996 2.996 0 0 0 8 5c0 .35.07.69.18 1H6c-1.1 0-2 .9-2 2v3c0 .55.45 1 1 1h1v7c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-7h1c.55 0 1-.45 1-1V8c0-1.1-.9-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/></svg>') no-repeat center center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .confetti {
+            width: 12px;
+            height: 12px;
+            background-color: #ffeb3b;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        @keyframes floatElement {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .celebrate-text {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page 1: Birthday Date & Entry Challenge -->
+    <div class="page page-1 flex flex-col items-center justify-center p-4">
+        <div id="party-container"></div>
+        <h1 class="text-4xl md:text-6xl text-white fancy-text mb-6 text-center">It's Birthday Time!</h1>
+        
+        <div id="date-container" class="flex flex-col items-center mb-8">
+            <div class="big-date celebrate-text mb-4">27 MARCH</div>
+            <p class="text-xl text-white text-center">The day we celebrate you!</p>
+        </div>
+        
+        <div id="challenge-container" class="flex flex-col items-center bg-white bg-opacity-20 backdrop-blur-md p-8 rounded-lg max-w-md w-full">
+            <h2 class="text-2xl md:text-3xl text-white mb-6 text-center">What does Vedant call you?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <button class="option-btn bg-white text-pink-500 font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-pink-100 transition" data-option="Shrawani">Shrawani</button>
+                <button class="option-btn bg-white text-pink-500 font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-pink-100 transition" data-option="Shrw">Shrw</button>
+                <button class="option-btn bg-white text-pink-500 font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-pink-100 transition" data-option="Shranu Didi">Shranu Didi</button>
+                <button class="option-btn bg-white text-pink-500 font-bold py-4 px-6 rounded-lg shadow-lg hover:bg-pink-100 transition" data-option="Gulab Jamun">Gulab Jamun</button>
+            </div>
+            <p id="error-message" class="mt-6 text-white text-center text-lg hidden">That's not right! Try again, sweetie! 😄</p>
+        </div>
+    </div>
+
+    <!-- Page 2: Wall of Memories -->
+    <div class="page page-2 p-6 overflow-y-auto">
+        <h1 class="text-4xl md:text-6xl text-white fancy-text mb-8 text-center pt-8">My Point of View</h1>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto memory-grid">
+            <!-- Memory Images -->
+            <div class="memory-item">
+                <img src="img1.jpeg" alt="Memory 1" class="memory-img">
+                <p class="text-white text-center mt-2">My Favourite thing</p>
+            </div>
+            <div class="memory-item">
+                <img src="img2.jpeg" alt="Memory 2" class="memory-img">
+                <p class="text-white text-center mt-2">Home-made Pathaka</p>
+            </div>
+            <div class="memory-item">
+                <img src="img3.jpeg" alt="Memory 3" class="memory-img">
+                <p class="text-white text-center mt-2">Pookie</p>
+            </div>
+            <div class="memory-item">
+                <img src="img4.jpeg" alt="Memory 4" class="memory-img">
+                <p class="text-white text-center mt-2">sun with sunshine</p>
+            </div>
+            <div class="memory-item">
+                <img src="img5.jpeg" alt="Memory 5" class="memory-img">
+                <p class="text-white text-center mt-2"> The Boss Bitch</p>
+            </div>
+            <div class="memory-item">
+                <img src="img6.jpeg" alt="Memory 6" class="memory-img">
+                <p class="text-white text-center mt-2">I forgot</p>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center mt-8 mb-16 max-w-6xl mx-auto w-full px-6">
+            <button id="prev-page-2" class="bg-white text-purple-500 font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-purple-100 transition">← Go Back</button>
+            <button id="next-page-btn" class="bg-white text-purple-500 font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-purple-100 transition">Continue to Birthday Message →</button>
+        </div>
+    </div>
+
+    <!-- Page 3: Important Message Page -->
+    <div class="page page-3 flex flex-col items-center">
+        <div class="w-full max-w-5xl mx-auto flex flex-col items-center py-8">
+            <h1 class="text-3xl sm:text-4xl md:text-6xl fancy-text mb-8 text-center px-4" style="color: #8B4513;">✨ Happy Birthday, Shrawani! 🎉🎂✨</h1>
+            
+            <div class="max-w-2xl w-full bg-white bg-opacity-20 backdrop-blur-md p-4 sm:p-8 rounded-lg text-center">
+                <p class="text-base sm:text-lg mb-6 leading-relaxed" style="color: #8B4513;">
+                    Another year older, another year of ghosting me like it's your full-time job. 😂 I seriously think you have a personal challenge to see how long you can make me wait for a reply. But somehow, even after all the "seen but not replied" moments, I still find myself looking forward to our random life talks and McD's iced coffee therapy sessions. ☕
+                </p>
+                <p class="text-base sm:text-lg mb-6 leading-relaxed" style="color: #8B4513;">
+                    I don't know when it happened, but somewhere between ranting about life, laughing over nonsense, and you bossing me around, I realized—I kinda like your dominating nature. 😏 It's funny how you act all tough, but deep down, I know there's a soft side (even if I don't get to see it often because you're too busy pretending to be a Mafia boss 😂).
+                </p>
+                <p class="text-base sm:text-lg mb-6 leading-relaxed hidden" id="more-text" style="color: #8B4513;">
+                    Jokes aside, you're one of the most important people in my life. You've seen me at my best and worst, yet somehow, you still tolerate me (barely, but still). No matter how many times you ignore my messages, I'll always be here, waiting for the day you finally reply on time—not getting my hopes up, though. 🙃<br><br>
+                    Oh, and sometimes, I genuinely forget that you're my cousin… decoding that must be hard. 😆 But hey, life's full of mysteries, right?<br><br>
+                    Happiest Birthday, Gulab Jamun! 🎈🎁 Now go enjoy your day, but don't forget—I expect a reply before your next birthday. 😜
+                    And one more thing "I hate YOU"
+                </p>
+                <button id="reveal-btn" class="bg-white text-teal-500 font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-teal-100 transition">Read More ↓</button>
+            </div>
+            
+            <div class="mt-8 mb-4">
+                <button id="prev-page-3" class="bg-white text-teal-500 font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-teal-100 transition">← Back to Memories</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Image Overlay -->
+    <div class="fullscreen-overlay">
+        <div class="close-btn">&times;</div>
+        <img class="fullscreen-img" src="" alt="Fullscreen Image">
+    </div>
+
+    <!-- Music Control -->
+    <div class="music-control">
+        <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="bgMusic" loop autoplay>
+        <source src="hbd.mp4" type="audio/mp4">
+        <!-- Fallback text if audio cannot be played -->
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Global Variables
+        const page1 = document.querySelector('.page-1');
+        const page2 = document.querySelector('.page-2');
+        const page3 = document.querySelector('.page-3');
+        const dateContainer = document.getElementById('date-container');
+        const challengeContainer = document.getElementById('challenge-container');
+        const errorMessage = document.getElementById('error-message');
+        const optionButtons = document.querySelectorAll('.option-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const revealBtn = document.getElementById('reveal-btn');
+        const moreText = document.getElementById('more-text');
+        const memoryImages = document.querySelectorAll('.memory-img');
+        const fullscreenOverlay = document.querySelector('.fullscreen-overlay');
+        const fullscreenImg = document.querySelector('.fullscreen-img');
+        const closeBtn = document.querySelector('.close-btn');
+        const bgMusic = document.getElementById('bgMusic');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const musicControl = document.querySelector('.music-control');
+
+        // Add new function to create party elements
+        function createPartyElements() {
+            const container = document.getElementById('party-container');
+            const elements = ['cake-icon', 'gift-icon', 'confetti'];
+            const colors = ['#ff69b4', '#a855f7', '#ffeb3b', '#4ade80', '#60a5fa'];
+            
+            // Clear existing elements
+            container.innerHTML = '';
+            
+            // Create fewer elements for better performance
+            for (let i = 0; i < 12; i++) {
+                const element = document.createElement('div');
+                const elementType = elements[Math.floor(Math.random() * elements.length)];
+                element.classList.add('party-element', elementType);
+                
+                // Distribute elements across the width more evenly
+                const xPos = (i / 12) * window.innerWidth + (Math.random() * 100 - 50);
+                const delay = (i / 12) * 4; // More evenly distributed delays
+                
+                if (elementType === 'confetti') {
+                    element.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                }
+                
+                element.style.left = `${xPos}px`;
+                element.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(element);
+            }
+
+            // Create new elements periodically
+            setInterval(() => {
+                if (container.children.length < 24) {  // Limit total number of elements
+                    const element = document.createElement('div');
+                    const elementType = elements[Math.floor(Math.random() * elements.length)];
+                    element.classList.add('party-element', elementType);
+                    
+                    const xPos = Math.random() * window.innerWidth;
+                    
+                    if (elementType === 'confetti') {
+                        element.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    }
+                    
+                    element.style.left = `${xPos}px`;
+                    container.appendChild(element);
+                    
+                    // Remove element after animation completes
+                    element.addEventListener('animationend', () => {
+                        element.remove();
+                    });
+                }
+            }, 2000);  // Add new element every 2 seconds
+        }
+
+        // Page Transitions
+        function goToPage2() {
+            gsap.to(page1, {
+                x: '-100%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            gsap.to(page2, {
+                x: '0%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            // Animate memory images
+            gsap.from('.memory-item', {
+                y: 50,
+                opacity: 0,
+                stagger: 0.1,
+                duration: 0.8,
+                delay: 0.8
+            });
+        }
+
+        function goToPage3() {
+            gsap.to(page2, {
+                x: '-100%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            gsap.to(page3, {
+                x: '0%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            // Create balloon animations for page 3
+            createBalloons();
+        }
+
+        // Challenge Option Buttons
+        optionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const option = button.getAttribute('data-option');
+                
+                if (option === 'Gulab Jamun') {
+                    gsap.to(button, {
+                        scale: 1.2,
+                        duration: 0.3,
+                        onComplete: () => {
+                            goToPage2();
+                        }
+                    });
+                } else {
+                    errorMessage.classList.remove('hidden');
+                    gsap.from(errorMessage, {
+                        y: -20,
+                        opacity: 0,
+                        duration: 0.5
+                    });
+                    
+                    gsap.to(button, {
+                        x: [10, -10, 10, -10, 0],
+                        duration: 0.5,
+                        ease: 'power1.inOut'
+                    });
+                }
+            });
+        });
+
+        // Next Page Button
+        nextPageBtn.addEventListener('click', () => {
+            goToPage3();
+        });
+
+        // Back Navigation Buttons
+        document.getElementById('prev-page-2').addEventListener('click', () => {
+            gsap.to(page2, {
+                x: '100%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            gsap.to(page1, {
+                x: '0%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+        });
+
+        document.getElementById('prev-page-3').addEventListener('click', () => {
+            gsap.to(page3, {
+                x: '100%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+            
+            gsap.to(page2, {
+                x: '0%',
+                duration: 0.8,
+                ease: 'power2.inOut'
+            });
+        });
+
+        // Reveal Button
+        revealBtn.addEventListener('click', () => {
+            moreText.classList.remove('hidden');
+            
+            gsap.from(moreText, {
+                y: 20,
+                opacity: 0,
+                duration: 1
+            });
+            
+            revealBtn.classList.add('hidden');
+        });
+
+        // Fullscreen Image Functionality
+        memoryImages.forEach(img => {
+            img.addEventListener('click', () => {
+                fullscreenImg.src = img.src;
+                fullscreenOverlay.style.display = 'flex';
+                
+                gsap.from(fullscreenImg, {
+                    scale: 0.5,
+                    opacity: 0,
+                    duration: 0.5
+                });
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            gsap.to(fullscreenImg, {
+                scale: 0.5,
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    fullscreenOverlay.style.display = 'none';
+                }
+            });
+        });
+
+        // Music Controls
+        musicControl.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                bgMusic.pause();
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        });
+
+        // Try to autoplay music (may be blocked by browser)
+        document.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    playIcon.classList.add('hidden');
+                    pauseIcon.classList.remove('hidden');
+                }).catch(err => {
+                    // Handle autoplay restrictions
+                    console.log('Autoplay prevented by browser policy');
+                });
+            }
+        }, { once: true });
+
+        // Initialize animations on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Try to play audio immediately
+            bgMusic.play().catch(err => {
+                console.log('Autoplay prevented by browser policy - waiting for user interaction');
+            });
+            
+            // Create party elements animation on page load
+            createPartyElements();
+            
+            // Animate the big date with a fancy entrance
+            gsap.from('.big-date', {
+                scale: 0.5,
+                opacity: 0,
+                duration: 1.5,
+                ease: 'elastic.out(1, 0.5)'
+            });
+            
+            // Delay the challenge appearance
+            setTimeout(() => {
+                gsap.from(challengeContainer, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1
+                });
+            }, 2000);
+            
+            // Initialize GSAP ScrollTrigger for memory grid
+            gsap.registerPlugin(ScrollTrigger);
+            
+            ScrollTrigger.batch('.memory-item', {
+                onEnter: batch => gsap.to(batch, {
+                    opacity: 1,
+                    y: 0,
+                    stagger: 0.15,
+                    duration: 0.8
+                }),
+                start: 'top 85%'
+            });
+        });
+    </script>
+</body>
+</html>
